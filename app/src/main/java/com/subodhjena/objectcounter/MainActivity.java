@@ -1,28 +1,9 @@
 package com.subodhjena.objectcounter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.imgproc.Imgproc;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -32,17 +13,33 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.View.OnTouchListener;
-import android.view.SurfaceView;
 import android.widget.Button;
 import android.widget.ImageView;
+
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity implements CvCameraViewListener2 {
     private static final String  TAG              = "OCVSample::Activity";
 
+    // переменные библиотеки OpenCV
     private boolean              mIsColorSelected = false;
     private Mat                  mRgba;
     private Scalar               mBlobColorRgba;
@@ -54,15 +51,26 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
     private CameraBridgeViewBase mOpenCvCameraView;
 
+
+    // наши переменные
     String p = Manifest.permission.CAMERA;
     Canvas canvas;
-    Paint paint = null, onPausePaint = null, cursorPaint = null,
-            eraserPaint = null, delEraserPaint = null, paintCircle = null;
+    Paint
+            // переменные для пера
+            paint = null,
+            paintCircle = null,
+            // переменные для курсора
+            cursorPaint = null,
+            delCursorPaint = null,
+            // переменные для ластика
+            eraserPaint = null,
+            delEraserPaint = null;
     ImageView imageView;
     Bitmap bitmap;
-    boolean isFirstLaunch = true, onPause = false, eraserMode = false;
-    float prevx = 0, prevy = 0, lineWidth = 5, cursorLastX, cursorLastY;
+    boolean onPause = false, eraserMode = false;
+    float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
 
+    // запуск OpenCV
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -96,50 +104,48 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_main);
-
+        // запрос необходимых прав доступа
         checkPermissions();
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
+        mOpenCvCameraView =
+                (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
 
         int width = 1280;
         int height = 720;
-
-        //bitmap = BitmapFactory.decodeResource(getResources(),
-                //R.drawable.cleartype);
-
+        // создание изображения и холста
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.eraseColor(Color.WHITE);
         canvas = new Canvas(bitmap);
 
+        // инициализация кистей
         paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.BLACK);
         paint.setStrokeWidth(lineWidth);
-
-        paintCircle = new Paint();
+        paintCircle = new Paint(); // исправление бага с "разрезанными" линиями при большой толщине
         paintCircle.setStyle(Paint.Style.FILL);
         paintCircle.setColor(Color.BLACK);
 
-        onPausePaint = new Paint();
-        onPausePaint.setStrokeWidth(1);
-        onPausePaint.setStyle(Paint.Style.STROKE);
-        onPausePaint.setColor(Color.WHITE);
-
-        delEraserPaint = new Paint();
-        delEraserPaint.setStrokeWidth(1);
-        delEraserPaint.setStyle(Paint.Style.FILL);
-        delEraserPaint.setColor(Color.WHITE);
-
+        // инициализация курсора
         cursorPaint = new Paint();
         cursorPaint.setStrokeWidth(1);
         cursorPaint.setStyle(Paint.Style.STROKE);
         cursorPaint.setColor(Color.RED);
+        delCursorPaint = new Paint(); // инициализация "стирателя" курсора
+        delCursorPaint.setStrokeWidth(1);
+        delCursorPaint.setStyle(Paint.Style.STROKE);
+        delCursorPaint.setColor(Color.WHITE);
 
+        // инициализация ластика
         eraserPaint = new Paint();
         eraserPaint.setStyle(Paint.Style.FILL);
         eraserPaint.setColor(Color.GRAY);
+        delEraserPaint = new Paint(); // инициализация "стирателя" ластика
+        delEraserPaint.setStrokeWidth(1);
+        delEraserPaint.setStyle(Paint.Style.FILL);
+        delEraserPaint.setColor(Color.WHITE);
 
         imageView = (ImageView) findViewById(R.id.imageView);
 
@@ -151,7 +157,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                     onPause = true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     onPause = false;
-                    canvas.drawCircle(cursorLastX, cursorLastY, 10, onPausePaint);
+                    canvas.drawCircle(cursorPrevX, cursorPrevY, 10, delCursorPaint);
                 }
                 return true;
             }
@@ -272,7 +278,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                     });
                 } else if (onPause) {
 
-                    canvas.drawCircle(prevx, prevy, 10, onPausePaint);
+                    canvas.drawCircle(prevx, prevy, 10, delCursorPaint);
                     canvas.drawCircle(tempx, tempy, 10, cursorPaint);
                     prevx = tempx;
                     prevy = tempy;
@@ -283,8 +289,8 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                         }
                     });
 
-                    cursorLastX = tempx;
-                    cursorLastY = tempy;
+                    cursorPrevX = tempx;
+                    cursorPrevY = tempy;
                 } else if (eraserMode) {
                     canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
                     canvas.drawCircle(tempx, tempy, 25, eraserPaint);
