@@ -150,33 +150,41 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
         imageView = (ImageView) findViewById(R.id.imageView);
 
+        // ЗАЖАТИЕ кнопки паузы / переключение на курсор <--- исправить для MVP
         Button pauseButton = (Button) findViewById(R.id.pauseButton);
         pauseButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                // при зажатии кнопки
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     onPause = true;
+                // при отпускании
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     onPause = false;
+                    // стирание курсора после отпускания
                     canvas.drawCircle(cursorPrevX, cursorPrevY, 10, delCursorPaint);
                 }
                 return true;
             }
         });
 
+        // кнопка ластика
         Button eraserButton = (Button) findViewById(R.id.eraserButton);
         eraserButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 eraserMode = !eraserMode;
+                // стирание ластика при нажатии на кнопку
                 canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
             }
         });
 
+        // кнопка очистки
         Button clearButton = (Button) findViewById(R.id.clearButton);
         clearButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 canvas.drawColor(Color.WHITE);
-
+                // обновление картинки, отображаемой в ImageVIew
+                // в потоке UI
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -186,6 +194,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             }
         });
 
+        // кнопка увеличения толщины пера
         Button incWidth = (Button) findViewById(R.id.incWidth);
         incWidth.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -194,6 +203,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             }
         });
 
+        // кнопка уменьшения тошщины пера
         Button decWidth = (Button) findViewById(R.id.decWidth);
         decWidth.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -203,6 +213,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         });
     }
 
+    // выключение камеры при сворачивании программы
     @Override
     public void onPause()
     {
@@ -211,6 +222,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             mOpenCvCameraView.disableView();
     }
 
+    // проверка OpenCV и включение камеры при разворачивании программы
     @Override
     public void onResume()
     {
@@ -224,13 +236,16 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         }
     }
 
+    // отключаем камеру при выключении
     public void onDestroy() {
         super.onDestroy();
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
     }
 
+    // инициализация детектора при включении камеры
     public void onCameraViewStarted(int width, int height) {
+        // матрица, содержащая информацию о цвете каждого пикселя текущего кадра
         mRgba = new Mat(height, width, CvType.CV_8UC4);
         mDetector = new ColorBlobDetector();
         mSpectrum = new Mat();
@@ -246,66 +261,77 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         mIsColorSelected = true;
     }
 
+    // освобождение памяти при выключении камеры
     public void onCameraViewStopped() {
         mRgba.release();
     }
 
+    // выполняется при снятии каждого кадра
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
 
-            mDetector.process(mRgba);
-            List<MatOfPoint> contours = mDetector.getContours();
-            //Log.e(TAG, "Contours count: " + contours.size());
+        // обработка кадра (?)
+        mDetector.process(mRgba);
 
-            if (contours.size() == 1) {
-                //Log.e(TAG, "Coordinates x: " + contours.get(0).toList().get(0).x
-                //        + " y: " + contours.get(0).toList().get(0).y);
-                //canvas.drawCircle((float) contours.get(0).toList().get(0).x, (float) contours.get(0).toList().get(0).y, 5, paint);
-                float tempx = (float) contours.get(0).toList().get(0).x, tempy = (float) contours.get(0).toList().get(0).y;
+        List<MatOfPoint> contours = mDetector.getContours();
+        //Log.e(TAG, "Contours count: " + contours.size());
 
-                //if (!)
+        // основное рисование (рисуется только тогда, когда в кадре 1 контур)
+        if (contours.size() == 1) {
+            //Log.e(TAG, "Coordinates x: " + contours.get(0).toList().get(0).x
+            //        + " y: " + contours.get(0).toList().get(0).y);
 
-                if (!onPause && !eraserMode) {
+            // присваивание значений координат текущей точки
+            float   tempx = (float) contours.get(0).toList().get(0).x,
+                    tempy = (float) contours.get(0).toList().get(0).y;
 
-                    canvas.drawLine(prevx, prevy, tempx, tempy, paint);
-                    canvas.drawCircle(tempx, tempy, lineWidth / 2, paintCircle);
-                    prevx = tempx;
-                    prevy = tempy;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-                        }
-                    });
-                } else if (onPause) {
+            // рисование пером (используется рисование линии между текущей и предыдущей точкой)
+            if (!onPause && !eraserMode) {
 
-                    canvas.drawCircle(prevx, prevy, 10, delCursorPaint);
-                    canvas.drawCircle(tempx, tempy, 10, cursorPaint);
-                    prevx = tempx;
-                    prevy = tempy;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-                        }
-                    });
+                canvas.drawLine(prevx, prevy, tempx, tempy, paint);
+                canvas.drawCircle(tempx, tempy, lineWidth / 2, paintCircle);
+                // запись предыдущих значений координат пера
+                prevx = tempx;
+                prevy = tempy;
 
-                    cursorPrevX = tempx;
-                    cursorPrevY = tempy;
-                } else if (eraserMode) {
-                    canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
-                    canvas.drawCircle(tempx, tempy, 25, eraserPaint);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
+                    }});
+            // переключение на курсор
+            } else if (onPause) {
 
-                    prevx = tempx;
-                    prevy = tempy;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-                        }
-                    });
-                }
+                canvas.drawCircle(prevx, prevy, 10, delCursorPaint);
+                canvas.drawCircle(tempx, tempy, 10, cursorPaint);
+                prevx = tempx;
+                prevy = tempy;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
+                    }
+                });
+
+                // запись предыдущих значений координат курсора
+                cursorPrevX = tempx;
+                cursorPrevY = tempy;
+            // переключение на режим ластика
+            } else if (eraserMode) {
+
+                canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
+                canvas.drawCircle(tempx, tempy, 25, eraserPaint);
+                // запись предыдущих значений координат ластика
+                prevx = tempx;
+                prevy = tempy;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
+                    }
+                });
             }
+        }
 
 //        if (isFirstLaunch) {
 //            Imgproc.drawContours(mRgba, contours, -1, CONTOUR_COLOR);
@@ -324,6 +350,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         return mRgba;
     }
 
+    /*
     private Scalar converScalarHsv2Rgba(Scalar hsvColor) {
         Mat pointMatRgba = new Mat();
         Mat pointMatHsv = new Mat(1, 1, CvType.CV_8UC3, hsvColor);
@@ -331,7 +358,9 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
         return new Scalar(pointMatRgba.get(0, 0));
     }
+    */
 
+    // проверка наличия разрешения на доступ к камере - если нет, то попросить разрешение
     private boolean checkPermissions() {
         int result;
         List<String> listPermissionsNeeded = new ArrayList<>();
@@ -340,7 +369,9 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             listPermissionsNeeded.add(p);
         }
         if (!listPermissionsNeeded.isEmpty()) {
-            ActivityCompat.requestPermissions(this, listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), 100);
+            ActivityCompat.requestPermissions(this,
+                            listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),
+                            100);
             return false;
         }
         return true;
