@@ -90,7 +90,6 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             }
         }
     };
-    //qweasdzxc
 
     public MainActivity() {
         Log.i(TAG, "Instantiated new " + this.getClass());
