@@ -1,0 +1,68 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:opencv="http://schemas.android.com/apk/res-auto">
+
+        <org.opencv.android.JavaCameraView
+            android:layout_width="match_parent"
+
+            android:layout_height="match_parent"
+            android:id="@+id/color_blob_detection_activity_surface_view"
+            opencv:camera_id="back" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop" />
+
+    <Button
+        android:id="@+id/pauseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/setLineWidthGroup"
+        android:text="Pause" />
+
+    <Button
+        android:id="@+id/clearButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/setLineWidthGroup"
+        android:text="Clear" />
+
+    <LinearLayout
+        android:id="@+id/setLineWidthGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/incWidth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="  +  " />
+
+        <Button
+            android:id="@+id/decWidth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="  -  " />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/eraserButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@+id/pauseButton"
+        android:text="Eraser" />
+
+</RelativeLayout>
