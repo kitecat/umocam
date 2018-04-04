@@ -150,21 +150,13 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
         imageView = (ImageView) findViewById(R.id.imageView);
 
-        // ЗАЖАТИЕ кнопки паузы / переключение на курсор <--- исправить для MVP
+        // кнопка паузы / переключение на курсор <-- новое*
         Button pauseButton = (Button) findViewById(R.id.pauseButton);
-        pauseButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                // при зажатии кнопки
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    onPause = true;
-                // при отпускании
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    onPause = false;
-                    // стирание курсора после отпускания
-                    canvas.drawCircle(cursorPrevX, cursorPrevY, 10, delCursorPaint);
-                }
-                return true;
+        pauseButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                onPause = !onPause;
+                // стирание курсора
+                canvas.drawCircle(cursorPrevX, cursorPrevY, 10, delCursorPaint);
             }
         });
 
