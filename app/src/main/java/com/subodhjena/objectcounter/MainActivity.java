@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity implements CvCameraViewListener2 {
-    private static final String TAG = "OCVSample::Activity";
+    private static final String  TAG              = "OCVSample::Activity";
 
     // переменные библиотеки OpenCV
     private boolean              mIsColorSelected = false;
