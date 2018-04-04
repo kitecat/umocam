@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
@@ -36,7 +35,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends Activity implements CvCameraViewListener2 {
+public class DrawActivity extends Activity implements CvCameraViewListener2 {
     private static final String  TAG              = "OCVSample::Activity";
 
     // переменные библиотеки OpenCV
@@ -81,7 +80,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
                     mOpenCvCameraView.enableView();
                     mOpenCvCameraView.setAlpha(0);
                     mOpenCvCameraView.setMaxFrameSize(1280, 720);
-                    //mOpenCvCameraView.setOnTouchListener(MainActivity.this);
+                    //mOpenCvCameraView.setOnTouchListener(DrawActivity.this);
                 } break;
                 default:
                 {
@@ -90,9 +89,8 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
             }
         }
     };
-    //1234567890
 
-    public MainActivity() {
+    public DrawActivity() {
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
@@ -104,7 +102,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_draw);
         // запрос необходимых прав доступа
         checkPermissions();
 
