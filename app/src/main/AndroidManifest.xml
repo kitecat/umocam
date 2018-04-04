@@ -21,7 +21,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-        <activity android:name=".DrawActivity"
+
+        <activity android:name=".MainActivity"
             android:screenOrientation="landscape"
             android:configChanges="keyboardHidden|orientation">
             <intent-filter>
@@ -29,6 +30,24 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity android:name=".DrawActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboardHidden|orientation">
+
+        </activity>
+
+        <activity android:name=".TutorialActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboardHidden|orientation">
+
+        </activity>
+
+        <activity android:name=".CalibrateActivity"
+            android:screenOrientation="landscape"
+            android:configChanges="keyboardHidden|orientation">
+
         </activity>
     </application>
 
