@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppThemeNew" parent="android:Theme.Material.Light.NoActionBar" >
+        <item name="android:colorPrimaryDark">@color/primary_dark_material_light_1</item>
+    </style>
+</resources>

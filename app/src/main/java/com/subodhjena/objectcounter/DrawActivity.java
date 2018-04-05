@@ -363,7 +363,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
                         imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
                     }});
             // переключение на курсор
-            } else if (onPause) {
+            } else if (onPause && !eraserModeON) {
 
                 canvas.drawCircle(prevx, prevy, 10, delCursorPaint);
                 canvas.drawCircle(tempx, tempy, 10, cursorPaint);
