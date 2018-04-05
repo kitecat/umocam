@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -33,6 +34,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +56,8 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
 
     // наши переменные
     String p = Manifest.permission.CAMERA;
+    String[] permissionsNeed = {Manifest.permission.CAMERA, Manifest.permission.FLASHLIGHT};
+
     Canvas canvas;
     Paint
             // переменные для пера
@@ -69,6 +73,9 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
     Bitmap bitmap;
     boolean onPause = false, eraserModeON = false;
     float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
+    // вспышка
+    Camera cam = Camera.open();
+    Camera.Parameters param = cam.getParameters();
 
     // запуск OpenCV
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -149,7 +156,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
 
         imageView = (ImageView) findViewById(R.id.imageView);
 
-        // кнопка паузы / переключение на курсор <-- новое*
+        // кнопка паузы / переключение на курсор
         Button pauseButton = (Button) findViewById(R.id.pauseButton);
         pauseButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -176,15 +183,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
                 return false;
             }
         });
-        /*
-        eraserButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                eraserModeON = !eraserModeON;
-                // стирание ластика при нажатии на кнопку
-                canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
-            }
-        });
-        */
+
         // кнопка очистки
         Button clearButton = (Button) findViewById(R.id.clearButton);
         clearButton.setOnClickListener(new View.OnClickListener() {
@@ -218,6 +217,18 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
                 paint.setStrokeWidth(lineWidth);
             }
         });
+
+        // кнопка включения вспышки
+        Button flashButton = (Button) findViewById(R.id.flashButton);
+        flashButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                param.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                cam.setParameters(param);
+                cam.startPreview();
+            }
+        });
+
     }
 
     // выключение камеры при сворачивании программы
@@ -371,10 +382,14 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
     private boolean checkPermissions() {
         int result;
         List<String> listPermissionsNeeded = new ArrayList<>();
-        result = ContextCompat.checkSelfPermission(this, p);
-        if (result != PackageManager.PERMISSION_GRANTED) {
-            listPermissionsNeeded.add(p);
+
+        for (int i = 0; i < permissionsNeed.length; i++) {
+            result = ContextCompat.checkSelfPermission(this, permissionsNeed[i]);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(permissionsNeed[i]);
+            }
         }
+
         if (!listPermissionsNeeded.isEmpty()) {
             ActivityCompat.requestPermissions(this,
                             listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),
