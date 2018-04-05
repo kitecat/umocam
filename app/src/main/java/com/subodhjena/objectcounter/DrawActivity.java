@@ -5,16 +5,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
@@ -36,7 +32,6 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
-import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
@@ -49,7 +44,6 @@ import org.opencv.imgproc.Imgproc;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.Policy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,18 +51,16 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
     private static final String  TAG              = "OCVSample::Activity";
 
     // переменные библиотеки OpenCV
-    private boolean              mIsColorSelected = false;
+    boolean              mIsColorSelected = false;
     private Mat                  mRgba;
-    private Scalar               mBlobColorRgba;
-    private Scalar               mBlobColorHsv;
+    Scalar               mBlobColorRgba;
+    Scalar               mBlobColorHsv;
     private ColorBlobDetector    mDetector;
-    private Mat                  mSpectrum;
-    private Size                 SPECTRUM_SIZE;
-    private Scalar               CONTOUR_COLOR;
+    Mat                  mSpectrum;
+    Size                 SPECTRUM_SIZE;
+    Scalar               CONTOUR_COLOR;
 
     private CameraBridgeViewBase mOpenCvCameraView;
-    private JavaCameraView cameraView;
-
 
     // наши переменные
     String[] permissionsNeed = {
