@@ -29,6 +29,7 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
@@ -56,6 +57,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
     private Scalar               CONTOUR_COLOR;
 
     private CameraBridgeViewBase mOpenCvCameraView;
+    private JavaCameraView cameraView;
 
 
     // наши переменные
@@ -78,9 +80,6 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
     boolean onPause = false, eraserModeON = false;
     float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
 
-    // вспышка
-    Camera cam = Camera.open();
-    Camera.Parameters param = cam.getParameters();
 
     Scalar selectedColor = null;
 
@@ -125,6 +124,8 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
                 (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+
+        this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
 
         SharedPreferences mSettings = getSharedPreferences("appPrefs", Context.MODE_PRIVATE);
         if(mSettings.contains("selectedColorJson")) {
@@ -238,9 +239,6 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
         flashButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                param.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-                cam.setParameters(param);
-                cam.startPreview();
             }
         });
 
