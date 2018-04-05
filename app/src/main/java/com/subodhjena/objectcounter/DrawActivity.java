@@ -87,7 +87,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
             delEraserPaint = null;
     ImageView imageView;
     Bitmap bitmap;
-    boolean onPause = false, eraserModeON = false;
+    boolean onPause = true, eraserModeON = false;
     float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
 
 
@@ -183,10 +183,16 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
         imageView = (ImageView) findViewById(R.id.imageView);
 
         // кнопка паузы / переключение на курсор
-        Button pauseButton = (Button) findViewById(R.id.pauseButton);
+        final Button pauseButton = (Button) findViewById(R.id.pauseButton);
+        pauseButton.setText(getString(R.string.start));
         pauseButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 onPause = !onPause;
+                if (onPause) {
+                    pauseButton.setText(R.string.start);
+                } else {
+                    pauseButton.setText(R.string.pause);
+                }
                 // стирание курсора
                 canvas.drawCircle(cursorPrevX, cursorPrevY, 10, delCursorPaint);
             }

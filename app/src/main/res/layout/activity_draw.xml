@@ -25,8 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_toStartOf="@+id/setLineWidthGroup"
-        android:text="@string/pause" />
+        android:layout_toStartOf="@+id/setLineWidthGroup" />
 
     <Button
         android:id="@+id/clearButton"
