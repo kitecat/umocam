@@ -1,29 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
 
-    <Button
-        android:id="@+id/startDrawButton"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/start_draw" />
+        android:id="@+id/startDrawButtonGroup"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@+id/showTutorialButtonGroup"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
-    <Button
-        android:id="@+id/showTutorialButton"
+        <ImageView
+            android:id="@+id/startDrawButton"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:src="@drawable/start_draw_drawable" />
+
+        <TextView
+            android:id="@+id/startDrawTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/start_draw" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/startDrawButton"
-        android:layout_centerHorizontal="true"
-        android:text="@string/tutorial" />
+        android:id="@+id/showTutorialButtonGroup"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
-    <Button
-        android:id="@+id/startCalibrateButton"
+        <ImageView
+            android:id="@+id/showTutorialButton"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:src="@drawable/show_instruction_drawable" />
+
+        <TextView
+            android:id="@+id/showTutorialTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tutorial" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/showTutorialButton"
-        android:layout_centerHorizontal="true"
-        android:text="@string/calibrate" />
+        android:id="@+id/startCalibrateButtonGroup"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/showTutorialButtonGroup"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/startCalibrateButton"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:src="@drawable/start_calibrate_drawable" />
+
+        <TextView
+            android:id="@+id/startCalibrateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/calibrate" />
+    </LinearLayout>
+
 </RelativeLayout>

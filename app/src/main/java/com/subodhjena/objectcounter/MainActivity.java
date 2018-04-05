@@ -5,15 +5,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 public class MainActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        setContentView(R.layout.activity_main);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button startDrawButton = (Button) findViewById(R.id.startDrawButton);
+        ImageView startDrawButton = (ImageView) findViewById(R.id.startDrawButton);
         startDrawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -21,7 +25,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button showTutorialButton = (Button) findViewById(R.id.showTutorialButton);
+        ImageView showTutorialButton = (ImageView) findViewById(R.id.showTutorialButton);
         showTutorialButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -29,7 +33,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button startCalibrateButton = (Button) findViewById(R.id.startCalibrateButton);
+        ImageView startCalibrateButton = (ImageView) findViewById(R.id.startCalibrateButton);
         startCalibrateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
