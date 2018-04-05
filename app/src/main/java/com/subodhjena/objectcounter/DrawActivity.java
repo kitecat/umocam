@@ -245,7 +245,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
 
             }
         });
-
+        /*
         // кнопка включения вспышки
         Button flashButton = (Button) findViewById(R.id.flashButton);
         flashButton.setOnClickListener(new View.OnClickListener() {
@@ -253,7 +253,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
             public void onClick(View v) {
             }
         });
-
+        */
         // кнопка сохранить
         Button saveButton = (Button) findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {

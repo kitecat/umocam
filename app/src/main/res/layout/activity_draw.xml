@@ -54,14 +54,14 @@
         android:layout_toStartOf="@+id/pauseButton"
         android:text="@string/eraser" />
 
-    <Button
-        android:id="@+id/flashButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/clearButton"
-        android:text="@string/flash" />
-
+    <!--<Button-->
+        <!--android:id="@+id/flashButton"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_toEndOf="@+id/clearButton"-->
+        <!--android:text="@string/flash" />-->
+    <!---->
     <Button
         android:id="@+id/saveButton"
         android:layout_width="wrap_content"
