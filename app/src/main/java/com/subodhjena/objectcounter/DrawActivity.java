@@ -5,10 +5,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
@@ -135,6 +138,8 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
                 (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+        // Включение автоповорота
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 
         SharedPreferences mSettings = getSharedPreferences("appPrefs", Context.MODE_PRIVATE);
         if(mSettings.contains("selectedColorJson")) {
@@ -151,6 +156,14 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.eraseColor(Color.WHITE);
         canvas = new Canvas(bitmap);
+
+        //canvas.rotate(90, width, height);
+
+//        Matrix matrix = new Matrix();
+//        matrix.preTranslate(width, height);
+//        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+//            matrix.postRotate(90f, canvas.getWidth(), canvas.getHeight());
+//        canvas.drawBitmap(mCacheBitmap, matrix, new Paint());
 
         // инициализация кистей
         paint = new Paint();
