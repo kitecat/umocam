@@ -221,7 +221,7 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
 //                    tempy = (float) contours.get(0).toList().get(0).y;
 //
 //            // рисование пером (используется рисование линии между текущей и предыдущей точкой)
-//            if (!onPause && !eraserMode) {
+//            if (!onPause && !eraserModeON) {
 //
 //                canvas.drawLine(prevx, prevy, tempx, tempy, paint);
 //                canvas.drawCircle(tempx, tempy, lineWidth / 2, paintCircle);
@@ -252,7 +252,7 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
 //                cursorPrevX = tempx;
 //                cursorPrevY = tempy;
 //                // переключение на режим ластика
-//            } else if (eraserMode) {
+//            } else if (eraserModeON) {
 //
 //                canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
 //                canvas.drawCircle(tempx, tempy, 25, eraserPaint);

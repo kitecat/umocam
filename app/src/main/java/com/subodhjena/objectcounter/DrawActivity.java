@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
@@ -66,7 +67,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
             delEraserPaint = null;
     ImageView imageView;
     Bitmap bitmap;
-    boolean onPause = false, eraserMode = false;
+    boolean onPause = false, eraserModeON = false;
     float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
 
     // запуск OpenCV
@@ -160,14 +161,30 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
 
         // кнопка ластика
         Button eraserButton = (Button) findViewById(R.id.eraserButton);
+        eraserButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        eraserModeON = true;
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        eraserModeON = false;
+                        canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
+                        break;
+                }
+                return false;
+            }
+        });
+        /*
         eraserButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                eraserMode = !eraserMode;
+                eraserModeON = !eraserModeON;
                 // стирание ластика при нажатии на кнопку
                 canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
             }
         });
-
+        */
         // кнопка очистки
         Button clearButton = (Button) findViewById(R.id.clearButton);
         clearButton.setOnClickListener(new View.OnClickListener() {
@@ -276,7 +293,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
                     tempy = (float) contours.get(0).toList().get(0).y;
 
             // рисование пером (используется рисование линии между текущей и предыдущей точкой)
-            if (!onPause && !eraserMode) {
+            if (!onPause && !eraserModeON) {
 
                 canvas.drawLine(prevx, prevy, tempx, tempy, paint);
                 canvas.drawCircle(tempx, tempy, lineWidth / 2, paintCircle);
@@ -307,7 +324,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
                 cursorPrevX = tempx;
                 cursorPrevY = tempy;
             // переключение на режим ластика
-            } else if (eraserMode) {
+            } else if (eraserModeON) {
 
                 canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
                 canvas.drawCircle(tempx, tempy, 25, eraserPaint);
