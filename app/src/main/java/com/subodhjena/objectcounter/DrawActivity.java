@@ -13,6 +13,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -24,6 +25,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -66,8 +68,11 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
 
 
     // наши переменные
-    String p = Manifest.permission.CAMERA;
-    String[] permissionsNeed = {Manifest.permission.CAMERA, Manifest.permission.FLASHLIGHT};
+    String[] permissionsNeed = {
+            Manifest.permission.CAMERA,
+            Manifest.permission.FLASHLIGHT,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     Canvas canvas;
     Paint
@@ -249,6 +254,15 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
             }
         });
 
+        // кнопка сохранить
+        Button saveButton = (Button) findViewById(R.id.saveButton);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                saveToInternalStorage(bitmap);
+            }
+        });
+
     }
 
     // выключение камеры при сворачивании программы
@@ -403,16 +417,21 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
     }
     */
 
+    // Метод для сохранения рисунков в галерею телефона
     private String saveToInternalStorage(Bitmap bitmapImage){
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        // path to /data/data/yourapp/app_data/imageDir
-        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        // Create imageDir
-        File mypath=new File(directory,"profile.jpg");
+
+        String root = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES).toString();
+        File myDir = new File(root + "/Umo Cam Pics");
+        myDir.mkdirs();
+        File itogFile = new File (myDir, (System.currentTimeMillis() / 1000) + ".png");
+
+        File directory = cw.getDir("Umo Cam Pics", Context.MODE_PRIVATE);
 
         FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream(mypath);
+            fos = new FileOutputStream(itogFile);
             // Use the compress method on the BitMap object to write image to the OutputStream
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
         } catch (Exception e) {
@@ -420,6 +439,8 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
         } finally {
             try {
                 fos.close();
+                Toast.makeText(getApplicationContext(), getString(R.string.saved), Toast.LENGTH_SHORT)
+                        .show();
             } catch (IOException e) {
                 e.printStackTrace();
             }
