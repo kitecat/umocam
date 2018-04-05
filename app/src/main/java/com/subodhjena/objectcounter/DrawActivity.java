@@ -3,6 +3,7 @@ package com.subodhjena.objectcounter;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -39,6 +40,9 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.Policy;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +85,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
     float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
 
 
+    // переменная для загрузки выбранного цвета
     Scalar selectedColor = null;
 
     // запуск OpenCV
@@ -125,8 +130,6 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
 
-        this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
-
         SharedPreferences mSettings = getSharedPreferences("appPrefs", Context.MODE_PRIVATE);
         if(mSettings.contains("selectedColorJson")) {
             Gson gson = new Gson();
@@ -137,6 +140,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
 
         int width = 1280;
         int height = 720;
+
         // создание изображения и холста
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         bitmap.eraseColor(Color.WHITE);
@@ -395,6 +399,30 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
         return new Scalar(pointMatRgba.get(0, 0));
     }
     */
+
+    private String saveToInternalStorage(Bitmap bitmapImage){
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath=new File(directory,"profile.jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
+    }
 
     // проверка наличия разрешения на доступ к камере - если нет, то попросить разрешение
     private boolean checkPermissions() {

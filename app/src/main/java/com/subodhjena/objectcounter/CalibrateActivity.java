@@ -235,6 +235,7 @@ public class CalibrateActivity extends Activity implements View.OnTouchListener,
         touchedRegionRgba.release();
         touchedRegionHsv.release();
 
+        // Сохранение в локальный файл настроек обьекта цвета
         SharedPreferences mSettings = getSharedPreferences("appPrefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = mSettings.edit();
         Gson gson = new Gson();
