@@ -2,22 +2,20 @@ package com.subodhjena.objectcounter;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageView;
+
+import com.google.gson.Gson;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -25,9 +23,11 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -35,7 +35,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CalibrateActivity extends Activity implements CvCameraViewListener2 {
+public class CalibrateActivity extends Activity implements View.OnTouchListener, CvCameraViewListener2 {
     private static final String  TAG              = "OCVSample::Activity";
 
     // переменные библиотеки OpenCV
@@ -53,21 +53,6 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
 
     // наши переменные
     String p = Manifest.permission.CAMERA;
-    Canvas canvas;
-    Paint
-            // переменные для пера
-            paint = null,
-            paintCircle = null,
-    // переменные для курсора
-    cursorPaint = null,
-            delCursorPaint = null,
-    // переменные для ластика
-    eraserPaint = null,
-            delEraserPaint = null;
-    ImageView imageView;
-    Bitmap bitmap;
-    boolean onPause = false, eraserMode = false;
-    float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
 
     // запуск OpenCV
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -78,9 +63,7 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
                 {
                     Log.i(TAG, "OpenCV loaded successfully");
                     mOpenCvCameraView.enableView();
-                    mOpenCvCameraView.setAlpha(0);
-                    mOpenCvCameraView.setMaxFrameSize(1280, 720);
-                    //mOpenCvCameraView.setOnTouchListener(CalibrateActivity.this);
+                    mOpenCvCameraView.setOnTouchListener(CalibrateActivity.this);
                 } break;
                 default:
                 {
@@ -110,42 +93,6 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
                 (CameraBridgeViewBase) findViewById(R.id.calibrateCameraView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
-
-        int width = 1280;
-        int height = 720;
-        // создание изображения и холста
-        bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        bitmap.eraseColor(Color.WHITE);
-        canvas = new Canvas(bitmap);
-
-        // инициализация кистей
-        paint = new Paint();
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(lineWidth);
-        paintCircle = new Paint(); // исправление бага с "разрезанными" линиями при большой толщине
-        paintCircle.setStyle(Paint.Style.FILL);
-        paintCircle.setColor(Color.BLACK);
-
-        // инициализация курсора
-        cursorPaint = new Paint();
-        cursorPaint.setStrokeWidth(1);
-        cursorPaint.setStyle(Paint.Style.STROKE);
-        cursorPaint.setColor(Color.RED);
-        delCursorPaint = new Paint(); // инициализация "стирателя" курсора
-        delCursorPaint.setStrokeWidth(1);
-        delCursorPaint.setStyle(Paint.Style.STROKE);
-        delCursorPaint.setColor(Color.WHITE);
-
-        // инициализация ластика
-        eraserPaint = new Paint();
-        eraserPaint.setStyle(Paint.Style.FILL);
-        eraserPaint.setColor(Color.GRAY);
-        delEraserPaint = new Paint(); // инициализация "стирателя" ластика
-        delEraserPaint.setStrokeWidth(1);
-        delEraserPaint.setStyle(Paint.Style.FILL);
-        delEraserPaint.setColor(Color.WHITE);
-
     }
 
     // выключение камеры при сворачивании программы
@@ -180,7 +127,6 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
 
     // инициализация детектора при включении камеры
     public void onCameraViewStarted(int width, int height) {
-        // матрица, содержащая информацию о цвете каждого пикселя текущего кадра
         mRgba = new Mat(height, width, CvType.CV_8UC4);
         mDetector = new ColorBlobDetector();
         mSpectrum = new Mat();
@@ -188,12 +134,6 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
         mBlobColorHsv = new Scalar(255);
         SPECTRUM_SIZE = new Size(200, 64);
         CONTOUR_COLOR = new Scalar(255,0,0,255);
-
-        mDetector.setHsvColor(new Scalar(36.5, 210, 210));
-
-        Imgproc.resize(mDetector.getSpectrum(), mSpectrum, SPECTRUM_SIZE);
-
-        mIsColorSelected = true;
     }
 
     // освобождение памяти при выключении камеры
@@ -205,69 +145,10 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
         mRgba = inputFrame.rgba();
 
-        // обработка кадра (?)
-        mDetector.process(mRgba);
-
-        List<MatOfPoint> contours = mDetector.getContours();
-        //Log.e(TAG, "Contours count: " + contours.size());
-
-        // основное рисование (рисуется только тогда, когда в кадре 1 контур)
-//        if (contours.size() == 1) {
-//            //Log.e(TAG, "Coordinates x: " + contours.get(0).toList().get(0).x
-//            //        + " y: " + contours.get(0).toList().get(0).y);
-//
-//            // присваивание значений координат текущей точки
-//            float   tempx = (float) contours.get(0).toList().get(0).x,
-//                    tempy = (float) contours.get(0).toList().get(0).y;
-//
-//            // рисование пером (используется рисование линии между текущей и предыдущей точкой)
-//            if (!onPause && !eraserModeON) {
-//
-//                canvas.drawLine(prevx, prevy, tempx, tempy, paint);
-//                canvas.drawCircle(tempx, tempy, lineWidth / 2, paintCircle);
-//                // запись предыдущих значений координат пера
-//                prevx = tempx;
-//                prevy = tempy;
-//
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-//                    }});
-//                // переключение на курсор
-//            } else if (onPause) {
-//
-//                canvas.drawCircle(prevx, prevy, 10, delCursorPaint);
-//                canvas.drawCircle(tempx, tempy, 10, cursorPaint);
-//                prevx = tempx;
-//                prevy = tempy;
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-//                    }
-//                });
-//
-//                // запись предыдущих значений координат курсора
-//                cursorPrevX = tempx;
-//                cursorPrevY = tempy;
-//                // переключение на режим ластика
-//            } else if (eraserModeON) {
-//
-//                canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
-//                canvas.drawCircle(tempx, tempy, 25, eraserPaint);
-//                // запись предыдущих значений координат ластика
-//                prevx = tempx;
-//                prevy = tempy;
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-//                    }
-//                });
-//            }
-//        }
-
+        if (mIsColorSelected) {
+            mDetector.process(mRgba);
+            List<MatOfPoint> contours = mDetector.getContours();
+            //Log.e(TAG, "Contours count: " + contours.size());
             Imgproc.drawContours(mRgba, contours, -1, CONTOUR_COLOR);
 
             Mat colorLabel = mRgba.submat(4, 68, 4, 68);
@@ -275,9 +156,7 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
 
             Mat spectrumLabel = mRgba.submat(4, 4 + mSpectrum.rows(), 70, 70 + mSpectrum.cols());
             mSpectrum.copyTo(spectrumLabel);
-
-
-        //Core.flip(mRgba, mRgba, 1);
+        }
 
         return mRgba;
     }
@@ -307,5 +186,62 @@ public class CalibrateActivity extends Activity implements CvCameraViewListener2
             return false;
         }
         return true;
+    }
+
+    public boolean onTouch(View v, MotionEvent event) {
+        int cols = mRgba.cols();
+        int rows = mRgba.rows();
+
+        int xOffset = (mOpenCvCameraView.getWidth() - cols) / 2;
+        int yOffset = (mOpenCvCameraView.getHeight() - rows) / 2;
+
+        int x = (int)event.getX() - xOffset;
+        int y = (int)event.getY() - yOffset;
+
+        Log.i(TAG, "Touch image coordinates: (" + x + ", " + y + ")");
+
+        if ((x < 0) || (y < 0) || (x > cols) || (y > rows)) return false;
+
+        Rect touchedRect = new Rect();
+
+        touchedRect.x = (x>4) ? x-4 : 0;
+        touchedRect.y = (y>4) ? y-4 : 0;
+
+        touchedRect.width = (x+4 < cols) ? x + 4 - touchedRect.x : cols - touchedRect.x;
+        touchedRect.height = (y+4 < rows) ? y + 4 - touchedRect.y : rows - touchedRect.y;
+
+        Mat touchedRegionRgba = mRgba.submat(touchedRect);
+
+        Mat touchedRegionHsv = new Mat();
+        Imgproc.cvtColor(touchedRegionRgba, touchedRegionHsv, Imgproc.COLOR_RGB2HSV_FULL);
+
+        // Calculate average color of touched region
+        mBlobColorHsv = Core.sumElems(touchedRegionHsv);
+        int pointCount = touchedRect.width*touchedRect.height;
+        for (int i = 0; i < mBlobColorHsv.val.length; i++)
+            mBlobColorHsv.val[i] /= pointCount;
+
+        mBlobColorRgba = converScalarHsv2Rgba(mBlobColorHsv);
+
+        Log.i(TAG, "Touched rgba color: (" + mBlobColorRgba.val[0] + ", " + mBlobColorRgba.val[1] +
+                ", " + mBlobColorRgba.val[2] + ", " + mBlobColorRgba.val[3] + ")");
+
+        mDetector.setHsvColor(mBlobColorHsv);
+
+        Imgproc.resize(mDetector.getSpectrum(), mSpectrum, SPECTRUM_SIZE);
+
+        mIsColorSelected = true;
+
+        touchedRegionRgba.release();
+        touchedRegionHsv.release();
+
+        SharedPreferences mSettings = getSharedPreferences("appPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = mSettings.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(mBlobColorHsv);
+        editor.putString("selectedColorJson", json);
+        editor.apply();
+
+        return false; // don't need subsequent touch events
     }
 }

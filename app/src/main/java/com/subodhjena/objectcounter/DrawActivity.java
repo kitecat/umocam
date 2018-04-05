@@ -2,6 +2,8 @@ package com.subodhjena.objectcounter;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -19,6 +21,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+
+import com.google.gson.Gson;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -69,6 +73,7 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
     Bitmap bitmap;
     boolean onPause = false, eraserModeON = false;
     float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
+    Scalar selectedColor = null;
 
     // запуск OpenCV
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
@@ -111,6 +116,14 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
                 (CameraBridgeViewBase) findViewById(R.id.color_blob_detection_activity_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+
+        SharedPreferences mSettings = getSharedPreferences("appPrefs", Context.MODE_PRIVATE);
+        if(mSettings.contains("selectedColorJson")) {
+            Gson gson = new Gson();
+            String json = mSettings.getString("selectedColorJson", "");
+            if (!json.equals(""))
+                selectedColor = gson.fromJson(json, Scalar.class);
+        }
 
         int width = 1280;
         int height = 720;
@@ -261,7 +274,12 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
         SPECTRUM_SIZE = new Size(200, 64);
         CONTOUR_COLOR = new Scalar(255,0,0,255);
 
-        mDetector.setHsvColor(new Scalar(36.5, 210, 210));
+        // присваиваем цвет который надо определять
+        if (selectedColor != null) {
+            mDetector.setHsvColor(selectedColor);
+        } else {
+            mDetector.setHsvColor(new Scalar(36.5, 210, 210));
+        }
 
         Imgproc.resize(mDetector.getSpectrum(), mSpectrum, SPECTRUM_SIZE);
 
