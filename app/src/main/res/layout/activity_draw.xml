@@ -44,17 +44,6 @@
         android:layout_centerHorizontal="true"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/incWidth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="  +  " />
-
-        <Button
-            android:id="@+id/decWidth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="  -  " />
     </LinearLayout>
 
     <Button
@@ -72,5 +61,14 @@
         android:layout_alignParentBottom="true"
         android:layout_toEndOf="@+id/clearButton"
         android:text="Flash" />
+
+    <SeekBar
+        android:id="@+id/widthBar"
+        android:layout_width="198dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:max="50"
+        android:progress="10" />
 
 </RelativeLayout>

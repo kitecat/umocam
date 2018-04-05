@@ -23,6 +23,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 
 import com.google.gson.Gson;
 
@@ -220,21 +221,23 @@ public class DrawActivity extends Activity implements CvCameraViewListener2 {
             }
         });
 
-        // кнопка увеличения толщины пера
-        Button incWidth = (Button) findViewById(R.id.incWidth);
-        incWidth.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                lineWidth++;
+        // ползунок ширины линии
+        SeekBar widthBar = (SeekBar) findViewById(R.id.widthBar);
+        widthBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                lineWidth = i;
                 paint.setStrokeWidth(lineWidth);
             }
-        });
 
-        // кнопка уменьшения тошщины пера
-        Button decWidth = (Button) findViewById(R.id.decWidth);
-        decWidth.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                lineWidth--;
-                paint.setStrokeWidth(lineWidth);
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
 
