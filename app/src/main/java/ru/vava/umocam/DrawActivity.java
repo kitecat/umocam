@@ -1,7 +1,6 @@
 package ru.vava.umocam;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
@@ -16,7 +15,6 @@ import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
@@ -69,45 +67,18 @@ public class DrawActivity extends CameraActivity implements CvCameraViewListener
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     Canvas canvas;
-    Paint
-            // переменные для пера
-            paint = null,
-            paintCircle = null,
-    // переменные для курсора
-    cursorPaint = null,
-            delCursorPaint = null,
-    // переменные для ластика
-    eraserPaint = null,
-            delEraserPaint = null;
+
+    // переменные для пера
+    Paint paint = null;
+    Paint paintCircle = null;
     ImageView imageView;
     Bitmap bitmap;
     boolean onPause = true, eraserModeON = false;
-    float prevx = 0, prevy = 0, lineWidth = 5, cursorPrevX, cursorPrevY;
+    float prevx = 0, prevy = 0, lineWidth = 5;
 
 
     // переменная для загрузки выбранного цвета
     Scalar selectedColor = null;
-
-    // запуск OpenCV
-//    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-//        @Override
-//        public void onManagerConnected(int status) {
-//            switch (status) {
-//                case LoaderCallbackInterface.SUCCESS: {
-//                    Log.i(TAG, "OpenCV loaded successfully");
-//                    mOpenCvCameraView.enableView();
-//                    mOpenCvCameraView.setAlpha(0);
-//                    mOpenCvCameraView.setMaxFrameSize(1280, 720);
-//                    //mOpenCvCameraView.setOnTouchListener(DrawActivity.this);
-//                }
-//                break;
-//                default: {
-//                    super.onManagerConnected(status);
-//                }
-//                break;
-//            }
-//        }
-//    };
 
     public DrawActivity() {
         Log.i(TAG, "Instantiated new " + this.getClass());
@@ -141,8 +112,6 @@ public class DrawActivity extends CameraActivity implements CvCameraViewListener
         mOpenCvCameraView = findViewById(R.id.color_blob_detection_activity_surface_view);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
-        // Включение автоповорота
-        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 
         SharedPreferences mSettings = getSharedPreferences("appPrefs", Context.MODE_PRIVATE);
         if (mSettings.contains("selectedColorJson")) {
@@ -157,44 +126,17 @@ public class DrawActivity extends CameraActivity implements CvCameraViewListener
 
         // создание изображения и холста
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        bitmap.eraseColor(Color.WHITE);
+        bitmap.eraseColor(Color.TRANSPARENT);
         canvas = new Canvas(bitmap);
-
-        //canvas.rotate(90, width, height);
-
-//        Matrix matrix = new Matrix();
-//        matrix.preTranslate(width, height);
-//        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
-//            matrix.postRotate(90f, canvas.getWidth(), canvas.getHeight());
-//        canvas.drawBitmap(mCacheBitmap, matrix, new Paint());
 
         // инициализация кистей
         paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.BLACK);
+        paint.setColor(scalarToPaintColor(selectedColor));
         paint.setStrokeWidth(lineWidth);
         paintCircle = new Paint(); // исправление бага с "разрезанными" линиями при большой толщине
         paintCircle.setStyle(Paint.Style.FILL);
-        paintCircle.setColor(Color.BLACK);
-
-        // инициализация курсора
-        cursorPaint = new Paint();
-        cursorPaint.setStrokeWidth(1);
-        cursorPaint.setStyle(Paint.Style.STROKE);
-        cursorPaint.setColor(Color.RED);
-        delCursorPaint = new Paint(); // инициализация "стирателя" курсора
-        delCursorPaint.setStrokeWidth(1);
-        delCursorPaint.setStyle(Paint.Style.STROKE);
-        delCursorPaint.setColor(Color.WHITE);
-
-        // инициализация ластика
-        eraserPaint = new Paint();
-        eraserPaint.setStyle(Paint.Style.FILL);
-        eraserPaint.setColor(Color.GRAY);
-        delEraserPaint = new Paint(); // инициализация "стирателя" ластика
-        delEraserPaint.setStrokeWidth(1);
-        delEraserPaint.setStyle(Paint.Style.FILL);
-        delEraserPaint.setColor(Color.WHITE);
+        paintCircle.setColor(scalarToPaintColor(selectedColor));
 
         imageView = findViewById(R.id.imageView);
 
@@ -204,31 +146,12 @@ public class DrawActivity extends CameraActivity implements CvCameraViewListener
         pauseButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 onPause = !onPause;
+
                 if (onPause) {
                     pauseButton.setText(R.string.start);
                 } else {
                     pauseButton.setText(R.string.pause);
                 }
-                // стирание курсора
-                canvas.drawCircle(cursorPrevX, cursorPrevY, 10, delCursorPaint);
-            }
-        });
-
-        // кнопка ластика
-        Button eraserButton = findViewById(R.id.eraserButton);
-        eraserButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                switch (motionEvent.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        eraserModeON = true;
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        eraserModeON = false;
-                        canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
-                        break;
-                }
-                return false;
             }
         });
 
@@ -236,7 +159,9 @@ public class DrawActivity extends CameraActivity implements CvCameraViewListener
         Button clearButton = findViewById(R.id.clearButton);
         clearButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                canvas.drawColor(Color.WHITE);
+                canvas.drawColor(Color.TRANSPARENT);
+//                bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                bitmap.eraseColor(Color.TRANSPARENT);
                 // обновление картинки, отображаемой в ImageVIew
                 // в потоке UI
                 runOnUiThread(new Runnable() {
@@ -284,7 +209,17 @@ public class DrawActivity extends CameraActivity implements CvCameraViewListener
                 saveToInternalStorage(bitmap);
             }
         });
+    }
 
+    // Convert OpenCV Scalar (BGR) to Android Paint color (ARGB)
+    public static int scalarToPaintColor(Scalar hsvScalar) {
+        // OpenCV HSV range: H [0,179], S [0,255], V [0,255]
+        float h = (float) (hsvScalar.val[0] * 2);  // Convert H to 0-360
+        float s = (float) (hsvScalar.val[1] / 255.0);  // Normalize S to [0,1]
+        float v = (float) (hsvScalar.val[2] / 255.0);  // Normalize V to [0,1]
+
+        // Convert HSV to RGB (Android handles alpha automatically)
+        return Color.HSVToColor(new float[]{h, s, v});
     }
 
     // выключение камеры при сворачивании программы
@@ -299,13 +234,6 @@ public class DrawActivity extends CameraActivity implements CvCameraViewListener
     @Override
     public void onResume() {
         super.onResume();
-//        if (!OpenCVLoader.initDebug()) {
-//            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-//            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
-//        } else {
-//            Log.d(TAG, "OpenCV library found inside package. Using it!");
-//            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-//        }
         if (!OpenCVLoader.initLocal()) {
             Log.d("OpenCV", "Internal OpenCV library not found. Using OpenCV Manager for initialization");
             OpenCVLoader.initLocal();
@@ -392,65 +320,14 @@ public class DrawActivity extends CameraActivity implements CvCameraViewListener
                     }
                 });
                 // переключение на курсор
-            } else if (onPause && !eraserModeON) {
-
-                canvas.drawCircle(prevx, prevy, 10, delCursorPaint);
-                canvas.drawCircle(tempx, tempy, 10, cursorPaint);
+            } else if (onPause) {
                 prevx = tempx;
                 prevy = tempy;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-                    }
-                });
-
-                // запись предыдущих значений координат курсора
-                cursorPrevX = tempx;
-                cursorPrevY = tempy;
-                // переключение на режим ластика
-            } else if (eraserModeON) {
-
-                canvas.drawCircle(prevx, prevy, 25, delEraserPaint);
-                canvas.drawCircle(tempx, tempy, 25, eraserPaint);
-                // запись предыдущих значений координат ластика
-                prevx = tempx;
-                prevy = tempy;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        imageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-                    }
-                });
             }
         }
 
-//        if (isFirstLaunch) {
-//            Imgproc.drawContours(mRgba, contours, -1, CONTOUR_COLOR);
-//
-//            Mat colorLabel = mRgba.submat(4, 68, 4, 68);
-//            colorLabel.setTo(mBlobColorRgba);
-//
-//            Mat spectrumLabel = mRgba.submat(4, 4 + mSpectrum.rows(), 70, 70 + mSpectrum.cols());
-//            mSpectrum.copyTo(spectrumLabel);
-//
-//            isFirstLaunch = false;
-//        }
-
-        //Core.flip(mRgba, mRgba, 1);
-
         return mRgba;
     }
-
-    /*
-    private Scalar converScalarHsv2Rgba(Scalar hsvColor) {
-        Mat pointMatRgba = new Mat();
-        Mat pointMatHsv = new Mat(1, 1, CvType.CV_8UC3, hsvColor);
-        Imgproc.cvtColor(pointMatHsv, pointMatRgba, Imgproc.COLOR_HSV2RGB_FULL, 4);
-
-        return new Scalar(pointMatRgba.get(0, 0));
-    }
-    */
 
     // Метод для сохранения рисунков в галерею телефона
     private String saveToInternalStorage(Bitmap bitmapImage) {

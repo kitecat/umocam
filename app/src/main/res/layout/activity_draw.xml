@@ -45,28 +45,11 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/eraserButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:text="@string/eraser" />
-
-    <!--<Button-->
-    <!--android:id="@+id/flashButton"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_alignParentBottom="true"-->
-    <!--android:layout_toEndOf="@+id/clearButton"-->
-    <!--android:text="@string/flash" />-->
-    <!---->
-
-    <Button
         android:id="@+id/saveButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/eraserButton"
+        android:layout_alignParentEnd="true"
         android:text="@string/save" />
 
     <SeekBar
